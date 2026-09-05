@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0f14">
+  <meta name="description" content="sixzjd 的个人主页：fakeGPS、Macraft、smail、SkillHub 等开源项目与在线服务。">
+  <meta name="author" content="sixzjd">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://www.sixzjd.sbs/">
+  <title>sixzjd — 开发者工具箱</title>
+  <script>
+    // 主题：系统优先，手动切换记住（无闪烁）
+    (function () {
+      var saved = localStorage.getItem("sixzjd-theme");
+      var dark = saved ? saved === "dark"
+        : matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.dataset.theme = dark ? "dark" : "light";
+    })();
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+    :root {
+      --bg: #faf9f6; --bg-soft: rgba(22,24,26,.035);
+      --ink: #16181a; --muted: rgba(22,24,26,.62); --faint: rgba(22,24,26,.4);
+      --line: rgba(22,24,26,.14); --line-strong: rgba(22,24,26,.32);
+      --panel: rgba(255,255,255,.72);
+      --fakegps: #0e7a96; --macraft: #1f7a3d; --smail: #4753d6; --skillhub: #c0543e;
+      --shadow: 0 20px 60px rgba(22,24,26,.08);
+    }
+    [data-theme="dark"] {
+      --bg: #0b0f14; --bg-soft: rgba(245,248,250,.05);
+      --ink: #f5f8fa; --muted: rgba(245,248,250,.6); --faint: rgba(245,248,250,.38);
+      --line: rgba(205,229,240,.13); --line-strong: rgba(205,229,240,.4);
+      --panel: rgba(19,28,38,.66);
+      --fakegps: #70e7ff; --macraft: #6ee787; --smail: #a0a9ff; --skillhub: #e07a64;
+      --shadow: 0 20px 60px rgba(0,0,0,.4);
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink);
+      font-family:"IBM Plex Sans","PingFang SC",system-ui,sans-serif; line-height:1.6;
+      -webkit-font-smoothing:antialiased; overflow-x:hidden;
+      transition:background .25s, color .25s; }
+    .mono { font-family:"IBM Plex Mono",ui-monospace,monospace; }
+    .wrap { max-width:960px; margin:0 auto; padding:0 28px; }
+    a { color:inherit; }
+    :focus-visible { outline:2px solid var(--ink); outline-offset:3px; }
+
+    header { position:sticky; top:0; z-index:9; background:color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid var(--line); }
+    .nav { display:flex; align-items:center; gap:13px; padding:16px 0; }
+    .nav b { font-size:15px; letter-spacing:-.01em; }
+    .nav .links { margin-left:auto; display:flex; gap:24px; font-size:13.5px; align-items:center; }
+    .nav .links a { color:var(--muted); text-decoration:none; transition:color .15s; }
+    .nav .links a:hover { color:var(--ink); }
+    .theme-btn { border:1px solid var(--line); background:none; color:var(--muted); cursor:pointer;
+      width:32px; height:32px; border-radius:9px; display:grid; place-items:center; transition:border-color .15s, color .15s; }
+    .theme-btn:hover { border-color:var(--line-strong); color:var(--ink); }
+    .theme-btn svg { width:15px; height:15px; }
+    .theme-btn .sun { display:none; }
+    [data-theme="dark"] .theme-btn .sun { display:block; }
+    [data-theme="dark"] .theme-btn .moon { display:none; }
+    @media (prefers-reduced-motion: no-preference) { .theme-btn svg { transition:transform .2s; } .theme-btn:hover svg { transform:rotate(12deg); } }
+
+    .hero { padding:118px 0 88px; }
+    .hero .hi { color:var(--faint); font-size:13px; letter-spacing:.14em; text-transform:uppercase; }
+    .hero h1 { font-size:clamp(44px,7.6vw,80px); line-height:1.05; letter-spacing:-.035em; font-weight:600; margin:20px 0 22px; }
+    .hero h1 em { font-style:normal; color:var(--skillhub); }
+    .hero p { color:var(--muted); font-size:17px; max-width:32em; margin:0; }
+    .hero .stats { display:flex; gap:36px; margin-top:46px; }
+    .hero .stats b { display:block; font-size:27px; font-weight:600; letter-spacing:-.02em; }
+    .hero .stats span { color:var(--faint); font-size:12.5px; }
+
+    section { padding:54px 0; }
+    .sec-head { display:flex; align-items:baseline; gap:16px; border-top:1px solid var(--ink); padding-top:16px; margin-bottom:6px; }
+    .sec-head .no { color:var(--faint); font-size:12.5px; letter-spacing:.12em; }
+    .sec-head h2 { font-size:14px; font-weight:600; letter-spacing:.08em; margin:0; text-transform:uppercase; }
+
+    .row { display:grid; grid-template-columns: 190px 1fr auto; gap:28px; align-items:baseline;
+      padding:30px 0; border-bottom:1px solid var(--line); text-decoration:none;
+      transition:padding-left .25s cubic-bezier(.16,1,.3,1); }
+    .row:hover { padding-left:14px; }
+    .row .name { font-size:23px; font-weight:600; letter-spacing:-.02em; display:flex; align-items:center; gap:10px; }
+    .row .name i { width:8px; height:8px; border-radius:50%; font-style:normal; flex:none; }
+    .row .desc { color:var(--muted); font-size:14.5px; max-width:42em; }
+    .row .tag { display:inline-block; margin-top:7px; margin-right:6px; font-size:11px;
+      color:var(--faint); border:1px solid var(--line); border-radius:5px; padding:1px 8px; }
+    .row .go { color:var(--faint); font-size:13px; white-space:nowrap; transition:color .2s; }
+    .row:hover .go { color:var(--ink); }
+    @media (max-width:720px) { .row { grid-template-columns:1fr; gap:8px; } .row .go { display:none; } .hero { padding:80px 0 60px; } }
+
+    .mapline { padding:26px 0 72px; color:var(--faint); font-size:13px; }
+    .mapline b { color:var(--muted); font-weight:500; }
+
+    footer { border-top:1px solid var(--ink); padding:26px 0 46px; }
+    .foot { display:flex; flex-wrap:wrap; gap:16px; justify-content:space-between; color:var(--faint); font-size:12.5px; }
+    .foot a { color:var(--muted); text-decoration:none; }
+    .foot a:hover { color:var(--ink); }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap nav">
+    <b>sixzjd</b>
+    <nav class="links">
+      <a href="#projects">项目</a>
+      <a href="#infra">站点</a>
+      <a href="https://github.com/sixzjd" target="_blank" rel="noopener">GitHub</a>
+      <button class="theme-btn" id="themeBtn" aria-label="切换深浅色">
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <div class="hi mono">sixzjd.sbs · personal index</div>
+    <h1>把有用的想法<br>做成<em>能用</em>的工具</h1>
+    <p>iOS 虚拟定位、macOS 原生启动器、边缘临时邮箱、跨 Agent 技能管理——全部开源。</p>
+    <div class="stats mono">
+      <div><b>4</b><span>开源项目</span></div>
+      <div><b>3</b><span>在线服务</span></div>
+      <div><b>100%</b><span>开源</span></div>
+    </div>
+  </div>
+
+  <section id="projects">
+    <div class="sec-head"><span class="no mono">01</span><h2>Projects / 项目</h2></div>
+
+    <a class="row" href="https://github.com/sixzjd/fakeGPS-for-iPhone" target="_blank" rel="noopener">
+      <span class="name"><i style="background:var(--fakegps)"></i>fakeGPS</span>
+      <span class="desc">iPhone 虚拟定位工具：地图选点、GPX 轨迹、坐标转换。
+        <span class="tag mono">iOS</span><span class="tag mono">macOS / Windows</span></span>
+      <span class="go mono">GitHub ↗</span>
+    </a>
+
+    <a class="row" href="https://github.com/sixzjd/Macraft" target="_blank" rel="noopener">
+      <span class="name"><i style="background:var(--macraft)"></i>Macraft</span>
+      <span class="desc">macOS 原生 Minecraft 启动器：实例、版本、Mod、资源包。
+        <span class="tag mono">macOS</span><span class="tag mono">SwiftUI</span></span>
+      <span class="go mono">GitHub ↗</span>
+    </a>
+
+    <a class="row" href="https://github.com/sixzjd/smail" target="_blank" rel="noopener">
+      <span class="name"><i style="background:var(--smail)"></i>smail</span>
+      <span class="desc">基于 Cloudflare Workers 的临时邮箱，全球边缘部署。
+        <span class="tag mono">Web</span><span class="tag mono">在线</span></span>
+      <span class="go mono">GitHub ↗</span>
+    </a>
+
+    <a class="row" href="https://github.com/sixzjd/skillhub" target="_blank" rel="noopener">
+      <span class="name"><i style="background:var(--skillhub)"></i>SkillHub</span>
+      <span class="desc">跨 Agent 技能管理器：扫描、同步、安装 24 个 AI Agent 的技能。
+        <span class="tag mono">macOS / Windows</span><span class="tag mono">Tauri</span></span>
+      <span class="go mono">GitHub ↗</span>
+    </a>
+  </section>
+
+  <section id="infra">
+    <div class="sec-head"><span class="no mono">02</span><h2>Infra / 站点</h2></div>
+    <p class="mapline mono">
+      <b>www.sixzjd.sbs</b> 本页 · <b>fakegps.sixzjd.sbs</b> fakeGPS ·
+      <b>macraft.sixzjd.sbs</b> Macraft · <b>mail.sixzjd.sbs</b> smail ·
+      <b>skillhub.sixzjd.sbs</b> SkillHub
+    </p>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot mono">
+    <span>© 2026 sixzjd</span>
+    <span><a href="https://github.com/sixzjd" target="_blank" rel="noopener">github.com/sixzjd</a></span>
+    <span>驱动于 Cloudflare</span>
+  </div>
+</footer>
+
+<script>
+  var btn = document.getElementById('themeBtn');
+  btn.addEventListener('click', function () {
+    var dark = document.documentElement.dataset.theme === 'dark';
+    var next = dark ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    localStorage.setItem('sixzjd-theme', next);
+    document.querySelector('meta[name="theme-color"]').content = dark ? '#faf9f6' : '#0b0f14';
+  });
+  // 系统主题变化时跟随（除非用户手动选过）
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+    if (!localStorage.getItem('sixzjd-theme')) {
+      document.documentElement.dataset.theme = e.matches ? 'dark' : 'light';
+    }
+  });
+</script>
+</body>
+</html>
