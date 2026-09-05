@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0f14">
+  <meta name="description" content="Macraft — macOS 原生 Minecraft 启动器：实例管理、版本安装、Mod 与资源包，SwiftUI 打造。">
+  <meta name="author" content="sixzjd">
+  <link rel="canonical" href="https://www.sixzjd.sbs/macraft/">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=3">
+  <title>Macraft — macOS 原生 Minecraft 启动器</title>
+  <script>
+    (function () {
+      var saved = localStorage.getItem("sixzjd-theme");
+      var dark = saved ? saved === "dark"
+        : matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.dataset.theme = dark ? "dark" : "light";
+    })();
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+    :root {
+      --bg: #faf9f6; --ink: #16181a; --muted: rgba(22,24,26,.62); --faint: rgba(22,24,26,.4);
+      --line: rgba(22,24,26,.14); --panel: #ffffff; --img-bg: #eef0ea;
+      --accent: #1f7a3d; --shadow: 0 20px 60px rgba(22,24,26,.08);
+    }
+    [data-theme="dark"] {
+      --bg: #0b0f14; --ink: #f5f8fa; --muted: rgba(245,248,250,.6); --faint: rgba(245,248,250,.38);
+      --line: rgba(205,229,240,.13); --panel: #141d26; --img-bg: #0e1620;
+      --accent: #6ee787; --shadow: 0 20px 60px rgba(0,0,0,.4);
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink);
+      font-family:"IBM Plex Sans","PingFang SC",system-ui,sans-serif; line-height:1.6;
+      -webkit-font-smoothing:antialiased; transition:background .25s, color .25s; }
+    .mono { font-family:"IBM Plex Mono",ui-monospace,monospace; }
+    .wrap { max-width:960px; margin:0 auto; padding:0 28px; }
+    a { color:inherit; }
+    :focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+
+    header { position:sticky; top:0; z-index:9; background:color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid var(--line); }
+    .nav { display:flex; align-items:center; gap:14px; padding:16px 0; }
+    .nav .back { color:var(--muted); text-decoration:none; font-size:13.5px; transition:color .15s; }
+    .nav .back:hover { color:var(--ink); }
+    .nav b { font-size:15px; letter-spacing:-.01em; }
+    .nav .links { margin-left:auto; display:flex; gap:22px; align-items:center; font-size:13.5px; }
+    .nav .links a { color:var(--muted); text-decoration:none; transition:color .15s; }
+    .nav .links a:hover { color:var(--ink); }
+    .theme-btn { border:1px solid var(--line); background:none; color:var(--muted); cursor:pointer;
+      width:32px; height:32px; border-radius:9px; display:grid; place-items:center; transition:border-color .15s, color .15s; }
+    .theme-btn:hover { border-color:var(--accent); color:var(--ink); }
+    .theme-btn svg { width:15px; height:15px; }
+    .theme-btn .sun { display:none; }
+    [data-theme="dark"] .theme-btn .sun { display:block; }
+    [data-theme="dark"] .theme-btn .moon { display:none; }
+
+    .hero { padding:96px 0 64px; }
+    .hero .dot { display:inline-block; width:10px; height:10px; border-radius:50%; background:var(--accent); vertical-align:6px; margin-right:10px; }
+    .hero h1 { font-size:clamp(44px,7.4vw,76px); line-height:1.04; letter-spacing:-.035em; font-weight:600; margin:18px 0 20px; }
+    .hero h1 em { font-style:normal; color:var(--accent); }
+    .hero p { color:var(--muted); font-size:17px; max-width:32em; margin:0 0 34px; }
+    .cta { display:flex; flex-wrap:wrap; gap:14px; }
+    .btn { display:inline-flex; align-items:center; gap:9px; padding:13px 26px; border-radius:10px;
+      font-weight:600; font-size:15px; text-decoration:none; transition:transform .15s, background .15s, border-color .15s; }
+    .btn:active { transform:scale(.98); }
+    .btn.primary { background:var(--accent); color:#fff; }
+    [data-theme="dark"] .btn.primary { color:#0b2a15; }
+    .btn.primary:hover { filter:brightness(1.08); }
+    .btn.ghost { border:1px solid var(--line); color:var(--ink); }
+    .btn.ghost:hover { border-color:var(--accent); }
+    .btn small { font-weight:400; opacity:.75; font-size:12px; }
+
+    section { padding:50px 0; }
+    .sec-head { display:flex; align-items:baseline; gap:16px; border-top:1px solid var(--ink); padding-top:16px; margin-bottom:6px; }
+    .sec-head .no { color:var(--faint); font-size:12.5px; letter-spacing:.12em; }
+    .sec-head h2 { font-size:14px; font-weight:600; letter-spacing:.08em; margin:0; text-transform:uppercase; }
+
+    .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-top:26px; }
+    @media (max-width:860px) { .grid { grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:520px) { .grid { grid-template-columns:1fr; } }
+    .card { border:1px solid var(--line); border-radius:14px; padding:20px; background:var(--panel); }
+    .card .sym { color:var(--accent); font-size:12px; }
+    .card h3 { margin:9px 0 6px; font-size:16px; letter-spacing:-.01em; }
+    .card p { margin:0; color:var(--muted); font-size:13.5px; }
+
+    .shots { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:26px; }
+    @media (max-width:720px) { .shots { grid-template-columns:1fr; } }
+    figure { margin:0; }
+    figure img { width:100%; border-radius:14px; border:1px solid var(--line); background:var(--img-bg); box-shadow:var(--shadow); display:block; }
+    figcaption { color:var(--faint); font-size:12px; margin-top:9px; }
+
+    footer { border-top:1px solid var(--ink); padding:26px 0 46px; }
+    .foot { display:flex; flex-wrap:wrap; gap:16px; justify-content:space-between; color:var(--faint); font-size:12.5px; }
+    .foot a { color:var(--muted); text-decoration:none; }
+    .foot a:hover { color:var(--ink); }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap nav">
+    <a class="back" href="/">← sixzjd</a>
+    <b>Macraft</b>
+    <nav class="links">
+      <a href="#shots">截图</a>
+      <a href="https://github.com/sixzjd/Macraft" target="_blank" rel="noopener">GitHub</a>
+      <button class="theme-btn" id="themeBtn" aria-label="切换深浅色">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <span class="hi mono" style="color:var(--faint);font-size:13px;letter-spacing:.14em;text-transform:uppercase"><span class="dot" aria-hidden="true"></span>macraft · v1.1.0</span>
+    <h1>macOS 原生的<br>Minecraft <em>启动器</em></h1>
+    <p>实例、版本、Mod、资源包，一个 SwiftUI 应用全部搞定。不套 Electron，内存占用和界面都原生。</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/sixzjd/Macraft/releases/latest/download/Macraft.dmg">
+        下载 <small>macOS · Apple Silicon</small>
+      </a>
+      <a class="btn ghost" href="https://github.com/sixzjd/Macraft/releases" target="_blank" rel="noopener">全部版本</a>
+    </div>
+  </div>
+
+  <section>
+    <div class="sec-head"><span class="no mono">01</span><h2>Features / 功能</h2></div>
+    <div class="grid">
+      <div class="card"><span class="sym mono">01</span><h3>实例管理</h3><p>多实例隔离存放，互不污染，一键切换。</p></div>
+      <div class="card"><span class="sym mono">02</span><h3>版本安装</h3><p>对接 Mojang 官方源，原版 / 快照直接装。</p></div>
+      <div class="card"><span class="sym mono">03</span><h3>Mod 与资源包</h3><p>拖入即用，启用状态一目了然。</p></div>
+      <div class="card"><span class="sym mono">04</span><h3>整合包</h3><p>常见整合包格式导入，自动解依赖。</p></div>
+    </div>
+  </section>
+
+  <section id="shots">
+    <div class="sec-head"><span class="no mono">02</span><h2>Screenshots / 界面</h2></div>
+    <div class="shots">
+      <figure><img src="img/01_home.jpg" alt="Macraft 主页" loading="lazy"><figcaption>主页 · 实例总览</figcaption></figure>
+      <figure><img src="img/02_instances.jpg" alt="实例管理" loading="lazy"><figcaption>实例管理</figcaption></figure>
+      <figure><img src="img/03_versions.jpg" alt="版本安装" loading="lazy"><figcaption>版本安装</figcaption></figure>
+      <figure><img src="img/04_mods.jpg" alt="Mod 管理" loading="lazy"><figcaption>Mod 管理</figcaption></figure>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot mono">
+    <span>© 2026 sixzjd · <a href="/">sixzjd.sbs</a></span>
+    <span><a href="https://github.com/sixzjd/Macraft" target="_blank" rel="noopener">github.com/sixzjd/Macraft</a></span>
+  </div>
+</footer>
+
+<script>
+  var themeBtn = document.getElementById('themeBtn');
+  themeBtn.addEventListener('click', function () {
+    var dark = document.documentElement.dataset.theme === 'dark';
+    var next = dark ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    localStorage.setItem('sixzjd-theme', next);
+    document.querySelector('meta[name="theme-color"]').content = dark ? '#faf9f6' : '#0b0f14';
+  });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+    if (!localStorage.getItem('sixzjd-theme')) {
+      document.documentElement.dataset.theme = e.matches ? 'dark' : 'light';
+    }
+  });
+</script>
+</body>
+</html>
